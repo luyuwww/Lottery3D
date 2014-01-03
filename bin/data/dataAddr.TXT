@@ -1,0 +1,8 @@
+福彩3D&http://www.17500.cn/getData/3d.TXT&3d.TXT&3d.jpg&3d
+双色球&http://www.17500.cn/getData/ssq.TXT&ssq.TXT&ssq.jpg&ssq
+七乐彩&http://www.17500.cn/getData/7lc.TXT&7lc.TXT&7lc.jpg&7lc
+排列三&http://www.17500.cn/getData/p3.TXT&p3.TXT&p3.jpg&p3
+排列五&http://www.17500.cn/getData/p5.TXT&p5.TXT&p5.jpg&p5
+超级大乐透&http://www.17500.cn/getData/dlt.TXT&dlt.TXT&dlt.jpg&dlt
+七星彩&http://www.17500.cn/getData/7xc.TXT&7xc.TXT&7xc.jpg&7xc
+体彩22选5&http://www.17500.cn/getData/t22x5.TXT&t22x5.TXT&t22x5.jpg&t22x5

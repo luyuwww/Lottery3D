@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="horizontal" verticalAlign="middle" creationComplete="init()"
+						width="1085" height="652" backgroundColor="#ACA2A2" 
+						effectStart="windowedapplication1_effectStartHandler(event)"
+						effectEnd="windowedapplication1_effectEndHandler(event)">
+	<mx:Script>
+		<![CDATA[
+			import entity.Lottery;
+			
+			import mx.collections.ArrayCollection;
+			import mx.containers.VBox;
+			import mx.controls.Image;
+			import mx.controls.Label;
+			import mx.events.EffectEvent;
+			import mx.events.FlexEvent;
+			
+			[Bindable]
+			private var lotteryList:ArrayCollection = null;
+			
+			protected function init():void{
+				var _stream:FileStream =new FileStream;
+				var _f:File =new File(File.applicationDirectory.resolvePath("data").nativePath+File.separator+"dataAddr.TXT");
+				_stream.open(_f , FileMode.READ);
+				var dataArray:Array = _stream.readUTFBytes(_stream.bytesAvailable).split("\n");
+				_stream.close();    
+				
+				lotteryList = new ArrayCollection();
+				for each (var line:String in dataArray){
+					var lott:Lottery = new Lottery();
+					var tempArray:Array	 = line.split("&");
+					lott.lotteryNameZh = tempArray[0];
+					lott.typeUrl =  tempArray[1];
+					lott.fileName = tempArray[2];
+					lott.imgName =  tempArray[3];
+					lott.lotteryType =  tempArray[4];
+					lotteryList.addItem(lott);
+					imgArea.addChild(getImgObj(lott));
+				}
+				
+			}
+			
+			private function getImgObj(lott:Lottery):DisplayObject{
+				if(lott == null){
+					return null;
+				}
+				var vBox:VBox = new VBox();
+				var lab:Label = new Label();
+				var img:Image = new Image();
+				img.width = 70;
+				img.height = 70;
+				img.source =  'image' +File.separator + lott.imgName;
+				lab.text = lott.lotteryNameZh;
+				lab.width = img.width;
+				lab.setStyle("textAlign","center");
+				vBox.addChild(img);
+				vBox.addChild(lab);
+				return vBox;
+			}
+			
+			protected function windowedapplication1_effectStartHandler(event:EffectEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function windowedapplication1_effectEndHandler(event:EffectEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:Style>
+		global { 
+			fontSize:12;
+		 }
+	</mx:Style>
+	<mx:HBox id="imgArea">
+	</mx:HBox>
+	
+</mx:WindowedApplication>

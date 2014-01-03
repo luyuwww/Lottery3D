@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" creationComplete="init(event)"
+						width="1085" height="652" verticalAlign="middle" backgroundColor="#FFFFFF">
+	<mx:Script>
+		<![CDATA[
+			import entity.DataEntity;
+			import entity.L3D;
+			import entity.Lottery;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.graphics.IStroke;
+			import mx.graphics.LinearGradientStroke;
+			import mx.utils.StringUtil;
+			
+			[Bindable]
+			private var lott:Lottery = null;
+			[Bindable]
+			private var dataList:ArrayCollection = null;
+			[Bindable]
+			private var weishuNum:ArrayCollection = null;//位数
+			[Bindable]
+			private var category:ArrayCollection = null;
+			
+			private function readData():void{ 
+				var _stream:FileStream =new FileStream;
+				var _f:File =new File(File.applicationDirectory.resolvePath("data").nativePath+File.separator+lott.fileName);
+				_stream.open(_f,FileMode.READ);
+				var dataArray:Array = _stream.readUTFBytes(_stream.bytesAvailable).split("\n");
+				_stream.close();    
+				dataList = new ArrayCollection();
+				for each (var line:String in dataArray){
+					var l3d:L3D = new L3D(line);
+					dataList.addItem(l3d);
+				}
+				
+			} 
+			
+			private function init(event:FlexEvent):void 	{
+				var _stream:FileStream =new FileStream;
+				var _f:File =new File(File.applicationDirectory.resolvePath("data").nativePath+File.separator+"dataAddr.TXT");
+				_stream.open(_f , FileMode.READ);
+				var dataArray:Array = _stream.readUTFBytes(_stream.bytesAvailable).split("\n");
+				_stream.close();    
+				
+				category = new ArrayCollection();
+				for each (var line:String in dataArray){
+					var lott:Lottery = new Lottery();
+					var tempArray:Array	 = line.split("&");
+					lott.lotteryNameZh = tempArray[0];
+					lott.typeUrl =  tempArray[1];
+					lott.fileName = tempArray[2];
+					lott.imgName =  tempArray[3];
+					lott.lotteryType =  tempArray[4];
+					category.addItem(lott);
+				}
+				
+				lott = category.getItemIndex(0) as Lottery;
+				this.maximize();
+				categoryChange();
+				
+			}
+			//根据NumericStepper 调整图的大小
+			private function changeLineChartWidth():void{
+				linechart.width = dataList.length*stepNum.value;
+			}
+			
+			
+			private function closewin():void{
+				Alert.okLabel = "是";
+				Alert.cancelLabel = "否";
+				Alert.show("确认退出","确认",Alert.OK|Alert.CANCEL,null,subClose);  
+				function subClose( event:CloseEvent):void
+				{
+					if (event.detail==Alert.OK) {
+						application.close();
+					}else{return;}
+				}
+			}
+			
+			protected function categoryChange():void{
+				lott = lotteryCategory.selectedItem as Lottery;
+				switch(StringUtil.trim(lott.lotteryType)) {
+					case "3d": {
+						weishuNum =  new ArrayCollection([{name:"百位", fieldName:"bw"},{name:"十位", fieldName:"sw"},
+							{name:"个位", fieldName:"gw"}]);
+						break;
+					}
+					case "ssq": {
+						weishuNum =  new ArrayCollection([{name:"一位", fieldName:"gw"},{name:"二位", fieldName:"sw"},
+							{name:"三位", fieldName:"bw"},{name:"四位", fieldName:"qw"}, {name:"ww", fieldName:"sww"}
+							,{name:"六位", fieldName:"bww"}, {name:"篮球", fieldName:"blue"}]);
+						break;
+					}
+					case "7lc": {
+						weishuNum =  new ArrayCollection([{name:"一位", fieldName:"gw"},{name:"二位", fieldName:"sw"},
+							{name:"三位", fieldName:"bw"},{name:"四位", fieldName:"qw"}, {name:"ww", fieldName:"sww"}
+							,{name:"六位", fieldName:"bww"},{name:"七位", fieldName:"qww"}, {name:"篮球", fieldName:"blue"}]);
+						break;
+					}
+					case "p3": {
+						weishuNum =  new ArrayCollection([{name:"百位", fieldName:"bw"},{name:"十位", fieldName:"sw"}
+							,{name:"个位", fieldName:"gw"}]);
+						break;
+					}
+					case "p5": {
+						weishuNum =  new ArrayCollection([{name:"一位", fieldName:"gw"},{name:"二位", fieldName:"sw"},
+							{name:"三位", fieldName:"bw"},{name:"四位", fieldName:"qw"}, {name:"五位", fieldName:"ww"}]);
+						break;
+					}
+					case "dlt": {
+						weishuNum =  new ArrayCollection([{name:"一位", fieldName:"gw"},{name:"二位", fieldName:"sw"},
+							{name:"三位", fieldName:"bw"},{name:"四位", fieldName:"qw"}, {name:"ww", fieldName:"sww"}
+							,{name:"六位", fieldName:"bww"},{name:"七位", fieldName:"qww"} ]);
+						break;
+					}
+					case "7xc": {
+						weishuNum =  new ArrayCollection([{name:"一位", fieldName:"gw"},{name:"二位", fieldName:"sw"},
+							{name:"三位", fieldName:"bw"},{name:"四位", fieldName:"qw"}, {name:"ww", fieldName:"sww"}
+							,{name:"六位", fieldName:"bww"},{name:"七位", fieldName:"qww"} ])
+						break;
+					}
+					case "t22x5": {
+						weishuNum =  new ArrayCollection([{name:"一位", fieldName:"gw"},{name:"二位", fieldName:"sw"},
+							{name:"三位", fieldName:"bw"},{name:"四位", fieldName:"qw"}, {name:"五位", fieldName:"ww"}]);
+						break;
+					}
+					default: {
+						weishuNum =  new ArrayCollection([{name:"百位", fieldName:"bw"},{name:"十位", fieldName:"sw"},
+							{name:"个位", fieldName:"gw"}]);
+						break;
+					}
+				}
+				
+			}
+			
+			protected function createFile():void {
+				var loader:URLLoader=new URLLoader(); 
+				var request:URLRequest=new URLRequest(lott.typeUrl);  
+				loader.load(request);   
+				loader.addEventListener(Event.COMPLETE,completeHandle);  
+			 	function completeHandle(e:Event):void {  
+					if(loader.data.length > 2000){
+						delFile(lott.fileName);
+						saveFile(loader.data ,lott.fileName);
+					}else{
+						Alert.show("网络获取\""+lott.lotteryNameZh+"\"数据出现错误同步失败!");
+					}
+				}  
+			}
+			private function saveFile(data:Object , fileName:String):void {
+				try {
+					var file:File = new File(File.applicationDirectory.resolvePath("data").nativePath+File.separator+fileName);
+					
+					var stream:FileStream = new FileStream;
+					stream.open(file, FileMode.WRITE);
+					stream.writeUTFBytes(data as String);
+					stream.close();
+				}  catch(e:Error)  {
+					Alert.show("网络获取\""+lott.lotteryNameZh+"\"数据出现错误同步失败!");
+				}finally{
+					Alert.show("网络获取\""+lott.lotteryNameZh+"\"数据完成!");
+				}
+			}
+			private function delFile(fileName:String):void {
+				try {
+					var file:File=new File(); 
+					var file:File = new File(File.applicationDirectory.resolvePath("data").nativePath+File.separator+fileName);
+					file.deleteFile();
+				}  catch(e:Error)  {
+					trace(e.message);
+				}
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:Style>
+		global { 
+			fontSize:12;
+		 }
+	</mx:Style>
+	
+	<mx:ApplicationControlBar  dock="true">
+		<mx:Image source="{'image/'+lott.imgName}" width="30" height="30"/>
+		<mx:Label fontSize="12" fontWeight="bold" text="彩种:"/>
+		<mx:ComboBox id="lotteryCategory" dataProvider="{category}" labelField="lotteryNameZh" change="categoryChange()"/>
+		<mx:Label fontSize="12" fontWeight="bold" text="位数:"/>
+		<mx:ComboBox id="weishuCombox" dataProvider="{weishuNum}" labelField="name"/>
+		<mx:Label fontSize="12" fontWeight="bold" text="图形间距:"/>
+		<mx:NumericStepper id="stepNum" minimum="5" value="{linechart.width/dataList.length}" stepSize="2" maximum="1100" change="changeLineChartWidth()"/>
+		<mx:Button label="更新数据" click="createFile()"/>
+		<mx:Button label="生成图形" click="readData()"/>
+		<mx:Button label="退出" click="closewin()"/>
+	</mx:ApplicationControlBar>
+	<mx:LineChart id="linechart" x="26" y="48" width="{dataList.length*25}" height="50%"
+				  color="#000000" dataProvider="{dataList}" fontFamily="Arial" showDataTips="true"
+				  styleName="LineChart"> 
+		<mx:backgroundElements>
+			<mx:GridLines direction="horizontal" horizontalTickAligned="true"/>
+		</mx:backgroundElements>
+		<mx:horizontalAxis> <!--X轴 数据来源-->
+			<mx:CategoryAxis categoryField="timesUpright"/>
+		</mx:horizontalAxis>
+		<mx:series><!--Y轴 数据来源-->
+			<mx:LineSeries yField="{weishuCombox.selectedItem['fieldName']}" form="curve" displayName="{weishuCombox.selectedItem['name']}" 
+						   itemRenderer="render.LineNumCirecleItemrenderer"/>
+		</mx:series>
+	</mx:LineChart>
+</mx:WindowedApplication>
